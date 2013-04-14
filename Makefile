@@ -33,17 +33,17 @@ DEBUG_LDFLAGS	:= -g
 # ============================
 # change directories if needed
 # ============================
-OPENZWAVE      := $(HOME)/ozw/open-zwave-read-only
-OPENZWAVE_LIB	:= /usr/lib
-OPENZWAVE_INC	:= /usr/include/openzwave
-THRIFT		    := $(HOME)/ozw/thrift
+OPENZWAVE      := $(HOME)/Workspace/ttdonovan-github/sandbox/zwave/ruby/open-zwave
+OPENZWAVE_LIB	:= $(HOME)/Workspace/ttdonovan-github/sandbox/zwave/google-openzwave/open-zwave/cpp/lib/mac
+OPENZWAVE_INC	:= $(HOME)/Workspace/ttdonovan-github/sandbox/zwave/google-openzwave/open-zwave/cpp/src
+THRIFT		    := /usr/local/Cellar/thrift/0.9.0/
 THRIFT_INC	    := /usr/local/include/thrift
 BOOSTSTOMP_LIB  := /usr/local/lib
 BOOSTSTOMP_INC	:= /usr/local/include/booststomp
 
 CFLAGS	:= -c $($(TARGET)_CFLAGS) 
 LDFLAGS	:= $($(TARGET)_LDFLAGS) \
-		-Wl,-rpath=$(OPENZWAVE)/cpp/lib/linux/ 
+		-Wl,-rpath=$(OPENZWAVE)/cpp/lib/mac/ 
 
 INCLUDES := -I $(OPENZWAVE_INC) -I $(OPENZWAVE_INC)/command_classes/ -I $(OPENZWAVE_INC)/value_classes/ \
  -I $(OPENZWAVE_INC)/platform/	-I $(OPENZWAVE_INC)/platform/unix	-I $(THRIFT_INC) -I $(BOOSTSTOMP_INC) \
@@ -53,12 +53,12 @@ INCLUDES := -I $(OPENZWAVE_INC) -I $(OPENZWAVE_INC)/command_classes/ -I $(OPENZW
 #GNUTLS := -lgnutls
 
 LIBZWAVE_STATIC := $(OPENZWAVE_LIB)/libopenzwave.a
-LIBZWAVE_DYNAMIC := $(OPENZWAVE_LIB)/libopenzwave.so.1.0
-LIBUSB := -ludev
+# LIBZWAVE_DYNAMIC := $(OPENZWAVE_LIB)/libopenzwave.so.1.0
+# LIBUSB := -ludev
 
 # for Mac OS X comment out above 2 lines and uncomment next 2 lines
-#LIBZWAVE := $(wildcard $(OPENZWAVE)/cpp/lib/mac/*.a)
-#LIBUSB := -framework IOKit -framework CoreFoundation
+LIBZWAVE := $(wildcard $(OPENZWAVE)/cpp/lib/mac/*.a)
+LIBUSB := -framework IOKit -framework CoreFoundation
 
 LIBBOOST := -lboost_thread-mt -lboost_program_options -lboost_system -lboost_filesystem
 LIBBOOST_STATIC := -lboost_thread-mt -lboost_program_options -lboost_system -lboost_filesystem 
@@ -100,10 +100,10 @@ Main.o: Main.cpp gen-cpp/RemoteManager_server.cpp
 	$(CXX) $(CFLAGS) -c Main.cpp $(INCLUDES)   
 	
 openzwave: 
-	cd $(OPENZWAVE)/cpp/build/linux/; make
+	cd $(OPENZWAVE)/cpp/build/mac/; make
 
 openzwave-install: openzwave
-	cd $(OPENZWAVE)/cpp/lib/linux; 	cp libopenzwave.so libopenzwave.so.1.0 
+	cd $(OPENZWAVE)/cpp/lib/mac; 	cp libopenzwave.so libopenzwave.so.1.0 
 	cd $(OPENZWAVE); sudo make -f debian/Makefile  install
 	
 booststomp:
