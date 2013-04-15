@@ -409,10 +409,11 @@ int main(int argc, char *argv[]) {
     // 
     string ozwconf_default = "/usr/share/openzwave/config";
     //
-    fs::path current_dir = fs::path(get_current_dir_name());
+    // fs::path current_dir = fs::path(get_current_dir_name());
+    fs::path current_dir = fs::path("/Users/tanner/Workspace/ttdonovan-github/sandbox/zwave/ruby");
     fs::path ozw_config_dir = fs::exists(ozwconf_default) ? 
         fs::path(ozwconf_default) :
-        current_dir.parent_path() / "open-zwave-read-only/config/";
+        current_dir.parent_path() / "open-zwave/config/";
     //
     try {        
         // Declare the supported options.

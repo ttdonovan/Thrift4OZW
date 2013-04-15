@@ -41,9 +41,12 @@ THRIFT_INC	    := /usr/local/include/thrift
 BOOSTSTOMP_LIB  := /usr/local/lib
 BOOSTSTOMP_INC	:= /usr/local/include/booststomp
 
-CFLAGS	:= -c $($(TARGET)_CFLAGS) 
+# CFLAGS	:= -c $($(TARGET)_CFLAGS)
+CFLAGS	:= -arch x86_64 -c $($(TARGET)_CFLAGS)
+# LDFLAGS	:= $($(TARGET)_LDFLAGS) \
+# 		-Wl,-rpath=$(OPENZWAVE)/cpp/lib/mac/ 
 LDFLAGS	:= $($(TARGET)_LDFLAGS) \
-		-Wl,-rpath=$(OPENZWAVE)/cpp/lib/mac/ 
+		-Wl,$(OPENZWAVE)/cpp/lib/mac/libopenzwave.a
 
 INCLUDES := -I $(OPENZWAVE_INC) -I $(OPENZWAVE_INC)/command_classes/ -I $(OPENZWAVE_INC)/value_classes/ \
  -I $(OPENZWAVE_INC)/platform/	-I $(OPENZWAVE_INC)/platform/unix	-I $(THRIFT_INC) -I $(BOOSTSTOMP_INC) \
@@ -60,8 +63,8 @@ LIBZWAVE_STATIC := $(OPENZWAVE_LIB)/libopenzwave.a
 LIBZWAVE := $(wildcard $(OPENZWAVE)/cpp/lib/mac/*.a)
 LIBUSB := -framework IOKit -framework CoreFoundation
 
-LIBBOOST := -lboost_thread-mt -lboost_program_options -lboost_system -lboost_filesystem
-LIBBOOST_STATIC := -lboost_thread-mt -lboost_program_options -lboost_system -lboost_filesystem 
+LIBBOOST := -lboost_thread-mt -lboost_program_options-mt -lboost_system-mt -lboost_filesystem-mt
+LIBBOOST_STATIC := -lboost_thread-mt -lboost_program_options-mt -lboost_system-mt -lboost_filesystem-mt
 LIBTHRIFT := -lthrift
 LIBBOOSTSTOMP := -lbooststomp
 LIBBOOSTSTOMP_STATIC := libbooststomp.a
@@ -77,15 +80,22 @@ LIBS := $(GNUTLS) $(LIBUSB) $(LIBBOOST) $(LIBTHRIFT) $(LIBBOOSTSTOMP)
 #all: openzwave booststomp ozwd ozwd.static
 all: openzwave booststomp ozwd
 
+# gen-cpp/RemoteManager_server.cpp: create_server.rb gen-cpp/RemoteManager.cpp
+# 	patch -N -p0 gen-cpp/ozw_types.h < ozw_types.h.patch
+# 	ruby create_server.rb --ozwroot=${OPENZWAVE} --thriftroot=$(THRIFT_INC)
+# 	cp gen-cpp/RemoteManager_server.cpp gen-cpp/RemoteManager_server.cpp.orig
+# 	cp gen-cpp/ozw_types.h gen-cpp/ozw_types.h.orig
+# 	patch -N -p0 gen-cpp/RemoteManager_server.cpp < RemoteManager_server.cpp.patch
+
 gen-cpp/RemoteManager_server.cpp: create_server.rb gen-cpp/RemoteManager.cpp
 	patch -N -p0 gen-cpp/ozw_types.h < ozw_types.h.patch
-	ruby create_server.rb --ozwroot=${OPENZWAVE} --thriftroot=$(THRIFT_INC)
-	cp gen-cpp/RemoteManager_server.cpp gen-cpp/RemoteManager_server.cpp.orig
-	cp gen-cpp/ozw_types.h gen-cpp/ozw_types.h.orig
+	# ruby create_server.rb --ozwroot=${OPENZWAVE} --thriftroot=$(THRIFT_INC)
+	cp gen-cpp/RemoteManager_server.cpp.orig gen-cpp/RemoteManager_server.cpp
 	patch -N -p0 gen-cpp/RemoteManager_server.cpp < RemoteManager_server.cpp.patch
-    
+
 gen-cpp/RemoteManager.cpp: ozw.thrift
-	thrift --gen cocoa --gen cpp --gen csharp --gen erl --gen go --gen java --gen js --gen perl --gen php --gen py --gen rb ozw.thrift
+	# thrift --gen cocoa --gen cpp --gen csharp --gen erl --gen go --gen java --gen js --gen perl --gen php --gen py --gen rb ozw.thrift
+	thrift --gen cpp --gen rb ozw.thrift
 
 gen-cpp/RemoteManager.o: gen-cpp/RemoteManager.cpp
 	$(CXX) $(CFLAGS) -c gen-cpp/RemoteManager.cpp -o gen-cpp/RemoteManager.o $(INCLUDES)
@@ -104,7 +114,7 @@ openzwave:
 
 openzwave-install: openzwave
 	cd $(OPENZWAVE)/cpp/lib/mac; 	cp libopenzwave.so libopenzwave.so.1.0 
-	cd $(OPENZWAVE); sudo make -f debian/Makefile  install
+#	cd $(OPENZWAVE); sudo make -f debian/Makefile  install
 	
 booststomp:
 	#cd $(BOOSTSTOMP); make 
